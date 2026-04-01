@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Bag - Jagam Footwear</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .product {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            padding: 20px 0;
+        }
+        .product img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin-right: 20px;
+        }
+        .product-info {
+            flex-grow: 1;
+        }
+        .product-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .product-price {
+            color: #007bff;
+        }
+        .buy-now {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .buy-now:hover {
+            background-color: #218838;
+        }
+        .empty-bag {
+            text-align: center;
+            color: #666;
+        }
+        .remove-item {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        .remove-item:hover {
+            background-color: #c82333;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Your Bag</h1>
+        {% if products %}
+            {% for item in products %}
+                <div class="product">
+                    <img src="{{ item.product.img.url }}" alt="{{ item.product.model }}">
+                    <div class="product-info">
+                        <div class="product-title">{{ item.product.company }} - {{ item.product.model }}</div>
+                        <div class="product-price">&#8377;{{ item.product.price }}</div>
+                        <div>Size: {{ item.size }}</div>
+                        <div>Quantity: {{ item.quantity }}</div>
+                        <form method="post" action="{% url 'confirm_purchase' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                            <input type="hidden" name="category" value="{{ item.category }}">
+                            <input type="hidden" name="size" value="{{ item.size }}">
+                            <button type="submit" class="buy-now">Buy Now</button>
+                        </form>
+                        <form method="post" action="{% url 'remove_from_bag' item.item_id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="remove-item">Remove</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="empty-bag">Your bag is empty.</p>
+        {% endif %}
+        <a href="/" class="back-link">Back to Home</a>
+    </div>
+</body>
+</html>

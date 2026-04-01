@@ -1,0 +1,217 @@
+{% load static %}
+{% static "public/images" as baseurl %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footwear Store</title>
+    <link rel="stylesheet" href="{% static 'node_modules/bootstrap-icons/font/bootstrap-icons.css' %}">
+    <link href="{% static 'public/images/favicon.ico' %}" rel="shortcut icon">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh; /* Ensure the body takes up the full viewport height */
+            display: flex;
+            flex-direction: column;
+            background-image: url('{% static "public/images/JFBG.jpeg" %}');
+            background-size: cover; 
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .Brandtitle {
+            font-weight: bold;
+            font-size: 35px;
+            color: rgb(185, 232, 91);
+            font-family: Papyrus;
+        }
+        .shade {
+            flex: 1; 
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        header {
+            font-size: 25px;
+            font-family: Arial;
+            padding: 5px;
+            display: flex;
+            justify-content: space-around;
+            background-color: rgb(25, 44, 144);
+            color: white;
+        }
+        nav span {
+            margin-top: 40px;
+            margin-right: 10px;
+        }
+        .short-cut span {
+            margin-right: 8px;
+        }
+        article {
+            background-color: rgb(97, 85, 85);
+            color: white;
+            text-align: center;
+            font-size: 25px;
+        }
+        .bi-lightning-fill {
+            color: yellow;
+        }
+        section {
+            display: grid;
+            padding: 80px;
+            padding-left: 115px;
+            grid-template-columns: 4fr 4fr 4fr;
+        }
+        footer {
+            background-color: black;
+            color: white;
+            padding: 10px;
+            padding-left: 120px;
+            display: grid;
+            a-visited:white;
+            grid-template-columns: repeat(4, 3fr);
+        }
+        .footertitle {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-family: Arial;
+        }
+        .footer-brandtitle {
+            font-size: 20px;
+            font-family: Arial;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .footertitle ~ span {
+            display: block;
+            font-family: Arial;
+            margin-bottom: 10px;
+        }
+        address span {
+            display: block;
+            margin-bottom: 10px;
+            font-family: Arial;
+        }
+        .footer-brandtitle ~ div span {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        .catlag {
+            color: white;
+            text-align: center;
+        }
+        a {
+            color: white;
+            text-decoration: none;
+        }
+        a:visited {
+            color: white;
+        }
+        a:hover {
+            color: green;
+        }
+        a:active {
+            color: red;
+        }
+        .small-text {
+            font-size: 14px;
+            color:grey; 
+        }
+    </style>
+</head>
+<body>
+    <div class="shade">
+        <header>
+            <div>
+                <span class="Brandtitle">JAGAM FOOTWEAR.</span>
+            </div>
+            <div>
+                <nav>
+                    <span>Home</span>
+                    {% if user.is_authenticated %}
+                        <span>Hello, {{ user.first_name }}</span>
+                        <a href="{% url 'order_history' %}"><span class="bi bi-person">Your Orders</span></a>
+                        <a href="{% url 'view_bag' %}"><span class="bi bi-cart4"></span></a>
+                        <span><a href="{% url 'logout' %}"> Logout</a></span>
+                    {% else %}
+                        <span class="small-text">Already have an account?</span>
+                        <span><a href="{% url 'login' %}">Login</a></span>
+                        <span class="small-text">New User?</span>
+                        <span><a href="{% url 'register' %}">Register</a></span>
+                        <a href="{% url 'login' %}"><span class="bi bi-person">Your orders </span></a>
+                        <a href="{% url 'login' %}"><span class="bi bi-cart4"></span></a>
+                    {% endif %}
+                </nav>
+            </div>
+            <div class="short-cut">
+                <span class="bi bi-search"></span>
+                <span class="bi bi-heart"></span>
+                
+            </div>
+        </header>
+
+        <article>
+            <span class="bi bi-lightning-fill"></span>
+            <span>Dusshera Diwali Damaka</span>
+            <span class="bi bi-lightning-fill"></span>
+        </article>
+
+        <section>
+            {% for dest in dests %}
+            <div>
+                {% if user.is_authenticated %}
+                    <a href="{{ dest.link }}">
+                        <img src="{{dest.img.url}}" width="400px" height="400px" title="{{dest.title}}">
+                    </a>
+                {% else %}
+                    <a href="/" onclick="alert('Please login to view this item.');">
+                        <img src="{{dest.img.url}}" width="400px" height="400px" title="{{dest.title}}">
+                    </a>
+                {% endif %}
+                <div class="catlag">{{dest.category}}<br>
+                    <br>
+                    {% if dest.offer %}
+                    discount: {{dest.discount}}%
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+        
+        <footer>
+            <div>
+                <div class="footer-brandtitle">Jagam Footwear</div>
+                <div>
+                    <a href="https://www.facebook.com/venkatesh.vicky.9678"><span class="bi bi-facebook"></span></a>
+                    <a href="https://x.com/VenkateshUlli5?"><span class="bi bi-twitter"></span></a>
+                    <a href="https://www.youtube.com/@ULLIVENKATESH-m5v"><span class="bi bi-youtube"></span></a>
+                    <a href="https://www.instagram.com/venkatesh_ulli45/"><span class="bi bi-instagram"></span>
+                    </a>
+                    
+                </div>
+            </div>
+            <div>
+                <div class="footertitle">SUPPORT</div>
+                <span>Contact us</span>
+                <span>FAQS</span>
+            </div>
+            <div>
+                <div class="footertitle">COMPANY</div>
+                <span>Our story</span>
+                <span>Careers</span>
+                <span>Terms & Conditions</span>
+            </div>
+            <div>
+                <div class="footertitle">CONTACT</div>
+                <address>
+                    <span>9959231011</span>
+                    <span>9160362289</span>
+                    <span><a href="mailto:venkateshulli45@gmail.com">venkateshulli45@gmail.com</a></span>
+
+                </address>  
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order History</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .order {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .order h2 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .order-details {
+            margin-left: 20px;
+        }
+        .no-orders {
+            text-align: center;
+            color: #666;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Your Order History</h1>
+        {% if orders %}
+            {% for order in orders %}
+                <div class="order">
+                    <div class="order-details">
+                        <p><strong>Date:</strong> {{ order.created_at|date:"F d, Y" }}</p>
+                        <p><strong>Product:</strong> {{ order.product }}</p>
+                        <p><strong>Size:</strong> {{ order.size }}</p>
+                        <p><strong>Shipping Address:</strong> {{ order.address }}</p>
+                        <a href="{% url 'cancel_order' order.id %}" class="btn btn-danger">Cancel</a>
+
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-orders">You haven't placed any orders yet.</p>
+        {% endif %}
+        <a href="/" class="back-link">Back to Home</a>
+    </div>
+</body>
+</html>

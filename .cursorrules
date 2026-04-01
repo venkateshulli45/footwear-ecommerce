@@ -1,0 +1,56 @@
+# 🛒 Django E-commerce Platform
+
+## 📌 Project Overview
+
+This is a scalable e-commerce backend built using Django. The system
+supports users, vendors, products, orders, payments, and reviews.
+
+------------------------------------------------------------------------
+
+## 🧠 AI Agent Instructions
+
+Act as a **Senior Backend Developer**: - Write clean, modular,
+production-ready code - Focus on scalability and performance - Follow
+Django best practices - Avoid N+1 queries - Keep business logic out of
+views
+
+------------------------------------------------------------------------
+
+## 🏗️ Tech Stack
+
+-   Django, DRF
+-   PostgreSQL
+-   Cloudinary
+
+------------------------------------------------------------------------
+
+## ⚙️ Setup
+
+``` bash
+git clone <repo_url>
+cd project
+pip install -r requirements.txt
+```
+
+Create `.env`:
+
+    DEBUG=True
+    DB_NAME=your_db
+    CLOUDINARY_CLOUD_NAME=xxx
+    CLOUDINARY_API_KEY=xxx
+    CLOUDINARY_API_SECRET=xxx
+
+------------------------------------------------------------------------
+
+## 🚀 Best Practices
+
+-   Use services layer
+-   Optimize queries
+-   Use pagination
+-   Write tests
+
+------------------------------------------------------------------------
+
+## 🎯 Goal
+
+Build scalable production-ready ecommerce backend

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footwear Store</title>
+    <link rel="stylesheet" href="../node_modules/bootstrap-icons/font/bootstrap-icons.css">
+    <link href="../public/images/favicon.ico" rel="shortcut icon">
+    <style>
+        .Brandtitle
+        {
+            font-weight: bold;
+            font-size: 40px;
+            color:rgb(185, 232, 91);
+            font-family: Papyrus;
+        }
+        .shade{
+        width:100vw;
+        height: 100vh;
+        background-color:rgba(0,0,0,0.7);
+        
+    }
+    body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh; 
+        display: flex;
+        flex-direction: column;
+        background-image: url('images/JFBG.jpeg');
+        background-size: cover; 
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+        header{
+            font-size: 25px;
+            font-family: Arial;
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            background-color: rgb(25, 44, 144);
+            color:white;
+        }
+        nav span
+        {
+            margin-top: 40px;
+            margin-right: 20px;
+        }
+        .short-cut span
+        {
+            margin-right: 12px;
+        }
+        article
+        {
+            background-color:rgb(97, 85, 85);
+            color:white;
+            text-align:center;
+            font-size: 25px;
+        }
+        .bi-lightning-fill
+        {
+            color:yellow;
+        }
+        section{
+            height:400px;
+            display: grid;
+            padding: 80px;
+            padding-left: 115px;
+            grid-template-columns: 4fr 4fr 4fr;
+
+        }
+        footer{
+            background-color: black;
+            color:white;
+            padding: 10px;
+            padding-left: 90px;
+            display:grid;
+            grid-template-columns: 2.4fr 2.4fr 2.4fr 2.4fr 2.4fr;
+        }
+        .footertitle
+        {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-family: Arial;
+        }
+        .footer-brandtitle
+        {
+            font-size: 20px;
+            font-family: Arial;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .footertitle~span{
+            display: block;
+            font-family: arial;
+            margin-bottom: 10px;;
+        }
+        address span
+        {
+            display: block;
+            margin-bottom: 10px;
+            font-family: Arial;
+        }
+        .footer-brandtitle~div span{
+            margin-right: 10px;
+            font-size: 20px;
+
+        }
+
+    </style>
+</head>
+<body background="images/JFBG.jpeg">
+    <div class="shade">
+    <header>
+   
+        <div>
+            <span class="Brandtitle">JAGAM FOOTWEAR.</span>
+        </div>
+        <div>
+            <nav>
+            <span>Home</span>
+            <span>Catlog</span>
+            <span>Pages</span>
+            <span>Blog</span>
+            <span>Docs</span>
+            </nav>
+        </div>
+        <div class="short-cut">
+            <span class="bi bi-search"></span>
+            <span class="bi bi-person"></span>
+            <span class="bi bi-heart"></span>
+            <span class="bi bi-cart4"></span>
+
+        </div>
+    </header>
+    <article>
+        <span class="bi bi-lightning-fill"></span>
+        <span>Happy Holiday Sales</span>
+        <span class="bi bi-lightning-fill" ></span>
+    </article>
+    <section>
+        <div>
+            <a href="https://www.myntra.com/men-footwear">
+        <img src="{% static 'public/images/Mens_home.jpg' %}" width ="400px" height="400px" title ="Men Footwear Collection"></a>
+        </div>
+        <div>
+            <a href ="https://www.myntra.com/women-footwear">
+        <img src ="images/Women_home.jpg" width="400px" height="400px" title ="Women Footwear Collection"></a>
+        </div>
+    
+
+    <div>
+        <a href="https://www.myntra.com/kids-footwear">
+       
+        <img src="images/Kids_home.jpg" width="400px" height="400px" title="Kids Footwear Collection"></a>
+    </div>
+
+    
+
+    </section>
+    <footer>
+        <div>
+            <div class="footer-brandtitle">Jagam Footwear</div>
+            <div>
+                <Span class="bi bi-facebook"></Span>
+                <span class="bi bi-youtube"></span>
+                <span class="bi bi-twitter"></span>
+                <span class ="bi bi-instagram"></span>
+            </div>
+
+        </div>
+        <div>
+            <DIV class="footertitle">SUPPORT</DIV>
+            <span>Contact us</span>
+            <span>FAQS</span>
+        </div>
+        <div>
+            <div class="footertitle">SHOP</div>
+            <span>Mens Shopping</span>
+            <span>Womens Shopping</span>
+            <span>Kids shopping</span>
+        </div>
+        <div>
+            <div class="footertitle">COMPANY</div>
+            <span>Our story</span>
+            <span>Careers</span>
+            <span>Terms&Conditions</span>
+
+        </div>
+        <div>
+           <div class="footertitle">CONTACT</div>
+            <address>
+            <span>9959231011</span>
+            <span>9160362289</span>
+            <span>venkateshuli45@gmail.com</span>
+        </address>  
+        </div>
+
+    </footer>
+</div>
+</body>
+</html>

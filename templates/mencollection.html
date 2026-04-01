@@ -1,0 +1,226 @@
+{% load static %}
+{% static "public/images" as baseurl %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Men's Footwear Collection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 90%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            justify-items: center;
+        }
+        .product {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .product img {
+            width: 100%;
+            height: 300px; 
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .product-details {
+            margin-top: 10px;
+        }
+        .product-info {
+            margin: 10px 0;
+        }
+        .product-info .company {
+            font-weight: bold;
+            font-size: 16px;
+            color: #555;
+        }
+        .product-info .model {
+            font-size: 14px;
+            color: #777;
+        }
+        .price {
+            font-size: 20px;
+            color: #333;
+            margin: 10px 0;
+        }
+        .size-label {
+            font-weight: bold;
+        }
+        .size-options {
+            margin-bottom: 10px;
+        }
+        .size-options select {
+            padding: 5px;
+            font-size: 14px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .buy-now {
+            background-color: #28a745;
+            color: white;
+        }
+        .buy-now:hover {
+            background-color: #218838;
+        }
+        .add-to-bag {
+            background-color: #007bff;
+            color: white;
+        }
+        .add-to-bag:hover {
+            background-color: #0056b3;
+        }
+        .size-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Men's Footwear Collection</h1>
+        <div class="product-grid">
+            {% for product in mm %}
+            <div class="product">
+                <a href="{{ product.img.url }}">
+                    <img src="{{ product.img.url }}" alt="Footwear Image">
+                </a>
+                <div class="product-info">
+                    <div class="company">{{ product.company }}</div>
+                    <div class="model">{{ product.model }}</div>
+                </div>
+                <div class="product-details">
+                    <div class="price">&#8377;{{ product.price }}</div>
+                    <div class="size-options">
+                        <label class="size-label" for="size-{{ product.id }}">Size:</label>
+                        <select id="size-{{ product.id }}" name="size" onchange="updateButtons({{ product.id }})">
+                            <option value="">Select Size</option>
+                            {% for size in product.AVAILABLE_SIZES %}
+                                <option value="{{ size }}" {% if size not in product.available_sizes %}disabled{% endif %}>
+                                    {{ size }}{% if size not in product.available_sizes %} (Out of Stock){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div id="size-message-{{ product.id }}" class="size-message">Please select size</div>
+                    </div>
+                    <div class="btn-group">
+                        <form method="post" action="{% url 'confirm_purchase' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <input type="hidden" name="category" value="MFM">
+                            <input type="hidden" name="size" id="hidden-size-{{ product.id }}">
+                            <button type="submit" class="btn buy-now" id="buy-now-{{ product.id }}" disabled onclick="setSelectedSize({{ product.id }})">Buy Now</button>
+                        </form>
+                        <button class="btn add-to-bag" id="add-to-bag-{{ product.id }}" disabled onclick="addToBag({{ product.id }}, 'MFM')">Add to Bag</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        function updateButtons(productId) {
+            var sizeSelect = document.getElementById('size-' + productId);
+            var buyNowButton = document.getElementById('buy-now-' + productId);
+            var addToBagButton = document.getElementById('add-to-bag-' + productId);
+            var sizeMessage = document.getElementById('size-message-' + productId);
+            
+            if (sizeSelect.value) {
+                buyNowButton.disabled = false;
+                addToBagButton.disabled = false;
+                sizeMessage.style.display = 'none';
+            } else {
+                buyNowButton.disabled = true;
+                addToBagButton.disabled = true;
+                sizeMessage.style.display = 'block';
+            }
+        }
+        
+        function setSelectedSize(productId) {
+            var sizeSelect = document.getElementById('size-' + productId);
+            var hiddenSizeInput = document.getElementById('hidden-size-' + productId);
+            hiddenSizeInput.value = sizeSelect.value;
+        }
+        
+        function addToBag(productId, category) {
+            var sizeSelect = document.getElementById('size-' + productId);
+            if (!sizeSelect.value) {
+                return;
+            }
+            
+            fetch('{% url "add_to_bag" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `product_id=${productId}&category=${category}&size=${sizeSelect.value}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Item added to bag successfully');
+                } else {
+                    alert('Failed to add item to bag');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while adding item to bag');
+            });
+        }
+
+      
+        document.addEventListener('DOMContentLoaded', function() {
+            var sizeSelects = document.querySelectorAll('select[name="size"]');
+            sizeSelects.forEach(function(select) {
+                var productId = select.id.split('-')[1];
+                updateButtons(productId);
+            });
+        });
+    </script>
+</body>
+</html>

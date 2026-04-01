@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+ 
+    <link href="{% static 'node_modules/bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('{% static "public/images/JFBG.jpeg" %}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center; /* Center the content inside the container */
+        }
+        .form-control {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            text-align: center; /* Center the text inside the inputs */
+        }
+        .form-title {
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+        }
+        .btn {
+            font-size: 1.1rem;
+        }
+        .text-danger {
+            font-size: 1.2rem;
+        }
+        .text-center p {
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2 class="form-title">JAGAM FOOTWEAR</h2>
+        <form action="login" method="post">
+            {% csrf_token %}
+            <input type="text" name="username" class="form-control" placeholder="Enter Username" required>
+            <input type="password" name="password1" class="form-control" placeholder="Enter Password" required><br>
+            <button type="submit" class="btn btn-primary btn-block">Login</button>
+        </form>
+        <div class="text-center mt-3">
+            {% for message in messages %}
+                <h5 class="text-danger">{{ message }}</h5>
+            {% endfor %}
+            <p>Don't have an account? <a href="register">Register</a></p>
+        </div>
+    </div>
+
+    <script src="{% static 'node_modules/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
