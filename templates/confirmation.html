@@ -1,90 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Purchase Confirmed</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f5f5f5;
-        }
-        .confirmation-container {
-            text-align: center;
-            background-color: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #2c3e50;
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-        p {
-            color: #34495e;
-            margin: 10px 0;
-            font-size: 1rem;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-            margin-top: 20px;
-            text-align: left;
-        }
-        ul li {
-            background-color: #f9f9f9;
-            padding: 10px;
-            margin-bottom: 5px;
-            border-radius: 5px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-            font-size: 1rem;
-        }
-        .home-button {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 12px 24px;
-            background-color: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-        }
-        .home-button:hover {
-            background-color: #2980b9;
-        }
-        .order-summary {
-            margin-bottom: 1rem;
-        }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
 
-    <div class="confirmation-container">
-        {% if purchase %}
-            <h1>Thank you for your purchase, {{ purchase.fullname }}!</h1>
-            <p class="order-summary">Order details:</p>
-            <ul>
-                <li><strong>Name:</strong> {{ purchase.fullname }}</li>
-                <li><strong>Product:</strong> {{ product.company }} - {{ product.articleno }}</li>
-                <li><strong>Size:</strong> {{ purchase.size }}</li>
-                <li><strong>Shipping Address:</strong> {{ purchase.address }}</li>
-                <li><strong>Phone:</strong> {{ purchase.phone }}</li>
-            </ul>
-        {% else %}
-            <h1>No Purchase Information Available</h1>
-            <p>We couldn't find any recent purchase information. If you've just made a purchase, please contact customer support.</p>
-        {% endif %}
-        <a href="/" class="home-button">Return to Homepage</a>
-    </div>
+{% block title %}Order confirmed — Jagam Footwear{% endblock %}
 
+{% block content %}
+<div class="card-panel" style="max-width:560px;margin:0 auto;text-align:center;padding:2.5rem 2rem;">
+  <p style="font-size:2rem;margin:0 0 0.5rem;" aria-hidden="true">✓</p>
+  <h1 class="pdp-title" style="font-size:1.5rem;">Thank you, {{ order.fullname }}</h1>
+  <p class="muted">Order <strong>{{ order.order_number }}</strong> · {{ order.created_at|date:"F j, Y g:i A" }}</p>
 
-</body>
-</html>
+  <div style="text-align:left;margin-top:2rem;">
+    <h2 class="pdp-title" style="font-size:1.05rem;">Items</h2>
+    <ul style="list-style:none;padding:0;margin:0;">
+      {% for line in order.lines.all %}
+        <li style="padding:0.65rem 0;border-bottom:1px solid var(--color-border);">
+          {{ line.product_label }}<br>
+          <span class="muted">Size {{ line.size }} × {{ line.quantity }} — ₹{{ line.line_total }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+    <table class="table-lines" style="margin-top:1rem;">
+      <tr>
+        <td>Subtotal</td>
+        <td style="text-align:right;">₹{{ order.subtotal }}</td>
+      </tr>
+      <tr>
+        <td>Shipping</td>
+        <td style="text-align:right;">₹{{ order.shipping_fee }}</td>
+      </tr>
+      <tr>
+        <td><strong>Total</strong></td>
+        <td style="text-align:right;"><strong>₹{{ order.total }}</strong></td>
+      </tr>
+    </table>
+    <p class="muted" style="margin-top:1rem;font-size:0.9rem;">Ship to: {{ order.address }}{% if order.landmark %}, near {{ order.landmark }}{% endif %} — {{ order.pincode }} · {{ order.phone }}</p>
+  </div>
+
+  <div class="payment-banner" style="text-align:left;margin-top:1.5rem;">
+    <strong>Next step: payment</strong>
+    Card / UPI checkout is not wired yet. This order is recorded with payment status “pending” until the gateway is enabled. You’ll receive updates by SMS or email once that goes live.
+  </div>
+
+  <a href="{% url 'order_history' %}" class="btn btn-primary" style="margin-top:1.5rem;">View all orders</a>
+  <a href="{% url 'index' %}" class="btn btn-ghost" style="margin-top:0.75rem;">Continue shopping</a>
+</div>
+{% endblock %}

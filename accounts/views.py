@@ -1,25 +1,37 @@
+from urllib.parse import urlencode
 
-from django.shortcuts import render,redirect
-from django.contrib import messages
-from django.contrib.auth.models import User,auth
-# Create your views here.
+from django.contrib import auth, messages
+from django.contrib.auth.models import User
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
+
+
+def _safe_redirect_path(request):
+    nxt = request.POST.get('next') or request.GET.get('next')
+    if nxt and url_has_allowed_host_and_scheme(
+        nxt,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return nxt
+    return '/'
+
 
 def login(request):
-    if request.method=="POST":
-        username =request.POST['username']
-        password =request.POST['password1']
-        
-        user = auth.authenticate(username=username,password=password)
-        
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password1']
+        user = auth.authenticate(username=username, password=password)
         if user is not None:
-            auth.login(request,user)
-            return redirect("/")
-        else:
-            messages.info(request,"invalid credentials")
-            return redirect('login')
-        
-    else:
-        return render(request,'login.html')
+            auth.login(request, user)
+            return redirect(_safe_redirect_path(request))
+        messages.info(request, 'Invalid credentials')
+        nxt = request.POST.get('next')
+        if nxt:
+            return redirect(f"{reverse('login')}?{urlencode({'next': nxt})}")
+        return redirect('login')
+    return render(request, 'login.html')
 
 def register(request):
     if request.method=="POST":

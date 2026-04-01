@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ product.company }} — Jagam Footwear{% endblock %}
+
+{% block content %}
+<p class="muted" style="margin-bottom:1rem;"><a href="{% if category == 'WFM' %}{% url 'wft' %}{% elif category == 'MFM' %}{% url 'mft' %}{% else %}{% url 'kft' %}{% endif %}">← {{ catalog_title }}</a></p>
+
+<div class="pdp-grid">
+  <div class="pdp-image">
+    <img src="{{ product.img.url }}" alt="{{ product.company }} {{ product.model|truncatewords:6 }}" width="600" height="750">
+  </div>
+  <div>
+    <p class="product-card__brand" style="margin-bottom:0.5rem;">{{ product.company }}</p>
+    <h1 class="pdp-title">{{ product.model }}</h1>
+    <p class="product-card__price" style="font-size:1.5rem;">₹{{ product.price }}</p>
+    <p class="muted">SKU {{ product.articleno }}</p>
+    <hr style="border:none;border-top:1px solid var(--color-border);margin:1.5rem 0;">
+
+    {% if user.is_authenticated %}
+      <form id="add-bag-form" data-url="{% url 'add_to_bag' %}">
+        {% csrf_token %}
+        <input type="hidden" name="product_id" value="{{ product.id }}">
+        <input type="hidden" name="category" value="{{ category }}">
+        <span class="muted" style="font-weight:600;display:block;margin-bottom:0.5rem;">Select size</span>
+        <div class="size-chips">
+          {% for size in all_sizes %}
+            {% if size in available_sizes %}
+              <input type="radio" name="size" value="{{ size }}" id="sz-{{ size }}" required>
+              <label for="sz-{{ size }}">{{ size }}</label>
+            {% else %}
+              <input type="radio" name="size" value="{{ size }}" id="sz-{{ size }}" disabled>
+              <label for="sz-{{ size }}" class="disabled">{{ size }}</label>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {% if available_sizes %}
+          <button type="submit" class="btn btn-accent btn-block">Add to bag</button>
+        {% else %}
+          <p class="muted">This item is out of stock in all sizes.</p>
+        {% endif %}
+      </form>
+      <p class="muted" style="margin-top:1rem;"><a href="{% url 'view_bag' %}">View bag</a></p>
+    {% else %}
+      <p class="muted">Sign in to choose a size and add this item to your bag.</p>
+      <a href="{% url 'login' %}?next={{ request.path|urlencode }}" class="btn btn-primary">Sign in to shop</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if user.is_authenticated %}
+<script>
+(function() {
+  var form = document.getElementById('add-bag-form');
+  if (!form) return;
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var fd = new FormData(form);
+    fetch(form.dataset.url, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
+      body: new URLSearchParams(fd)
+    }).then(function(r) { return r.json().then(function(d) { return { ok: r.ok, d: d }; }); })
+      .then(function(x) {
+        if (x.ok && x.d.status === 'success') {
+          window.location.href = '{% url "view_bag" %}';
+        } else if (x.d.login_url) {
+          window.location.href = x.d.login_url;
+        } else {
+          alert(x.d.message || 'Something went wrong');
+        }
+      }).catch(function() { alert('Network error'); });
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

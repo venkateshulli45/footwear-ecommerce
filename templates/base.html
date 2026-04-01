@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Jagam Footwear{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'node_modules/bootstrap-icons/font/bootstrap-icons.css' %}">
+  <link rel="stylesheet" href="{% static 'css/store.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a href="{% url 'index' %}" class="logo">Jagam <span>Footwear</span></a>
+      <nav class="nav-main" aria-label="Primary">
+        <a href="{% url 'index' %}">Home</a>
+        <a href="{% url 'wft' %}">Women</a>
+        <a href="{% url 'mft' %}">Men</a>
+        <a href="{% url 'kft' %}">Kids</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'order_history' %}">Orders</a>
+        {% endif %}
+      </nav>
+      <div class="nav-actions">
+        {% if user.is_authenticated %}
+          <span class="muted" style="font-size:0.9rem;">Hi, {{ user.first_name|default:user.username }}</span>
+          <a href="{% url 'view_bag' %}" class="icon-link" aria-label="Shopping bag">
+            <i class="bi bi-bag" aria-hidden="true"></i>
+            {% if bag_item_count %}
+              <span class="badge-count">{{ bag_item_count }}</span>
+            {% endif %}
+          </a>
+          <a href="{% url 'logout' %}" class="btn btn-ghost" style="padding:0.5rem 0.85rem;">Sign out</a>
+        {% else %}
+          <a href="{% url 'login' %}" class="btn btn-ghost">Sign in</a>
+          <a href="{% url 'register' %}" class="btn btn-primary">Register</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main>
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <div>
+        <h3>Jagam Footwear</h3>
+        <p class="muted" style="color:rgba(255,255,255,0.7);">Quality footwear for every step — curated collections and reliable delivery.</p>
+      </div>
+      <div>
+        <h3>Shop</h3>
+        <p><a href="{% url 'wft' %}">Women</a></p>
+        <p><a href="{% url 'mft' %}">Men</a></p>
+        <p><a href="{% url 'kft' %}">Kids</a></p>
+      </div>
+      <div>
+        <h3>Help</h3>
+        <p><a href="mailto:support@jagamfootwear.example">Contact</a></p>
+        <p>Shipping &amp; returns</p>
+      </div>
+    </div>
+    <div class="site-footer__bottom">
+      © {% now "Y" %} Jagam Footwear. All rights reserved.
+    </div>
+  </footer>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

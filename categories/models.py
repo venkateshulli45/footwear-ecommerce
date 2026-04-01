@@ -1,19 +1,86 @@
+import uuid
+
 from django.db import models
-from django.shortcuts import render
-from django.http import HttpResponse
 from django.contrib.auth.models import User
 
 
 class BagItem(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bag_items')
     product_id = models.IntegerField()
-    category = models.CharField(max_length=3)  
-    size = models.CharField(max_length=3,default=1)
-    quantity = models.IntegerField(default=1)
+    category = models.CharField(max_length=3)
+    size = models.CharField(max_length=3, default='1')
+    quantity = models.PositiveIntegerField(default=1)
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'product_id', 'category')
+        unique_together = ('user', 'product_id', 'category', 'size')
+        ordering = ['-added_at']
+
+
+class Order(models.Model):
+    """Placed order; payment is finalized in a later gateway step (payment_status)."""
+
+    class Status(models.TextChoices):
+        PENDING_PAYMENT = 'pending_payment', 'Pending payment'
+        CONFIRMED = 'confirmed', 'Confirmed'
+        PROCESSING = 'processing', 'Processing'
+        SHIPPED = 'shipped', 'Shipped'
+        DELIVERED = 'delivered', 'Delivered'
+        CANCELLED = 'cancelled', 'Cancelled'
+
+    class PaymentStatus(models.TextChoices):
+        PENDING = 'pending', 'Payment pending'
+        PAID = 'paid', 'Paid'
+        FAILED = 'failed', 'Failed'
+        COD = 'cod', 'Cash on delivery'
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
+    order_number = models.CharField(max_length=32, unique=True, editable=False)
+    fullname = models.CharField(max_length=100)
+    phone = models.CharField(max_length=15)
+    address = models.TextField()
+    landmark = models.CharField(max_length=100, blank=True)
+    pincode = models.CharField(max_length=10)
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
+    shipping_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(
+        max_length=32,
+        choices=Status.choices,
+        default=Status.PENDING_PAYMENT,
+    )
+    payment_status = models.CharField(
+        max_length=32,
+        choices=PaymentStatus.choices,
+        default=PaymentStatus.PENDING,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.order_number} — {self.user.username}'
+
+    def save(self, *args, **kwargs):
+        if not self.order_number:
+            self.order_number = uuid.uuid4().hex[:12].upper()
+        super().save(*args, **kwargs)
+
+
+class OrderLine(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='lines')
+    category = models.CharField(max_length=3)
+    product_id = models.IntegerField()
+    product_label = models.CharField(max_length=255)
+    size = models.CharField(max_length=3)
+    quantity = models.PositiveIntegerField()
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    line_total = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        ordering = ['id']
 
 
 class Purchase(models.Model):

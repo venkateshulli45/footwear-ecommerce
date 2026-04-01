@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping bag — Jagam Footwear{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <h1>Shopping bag</h1>
+  <p>Review your items before checkout. Shipping is free on orders over ₹{{ free_shipping_at|floatformat:0 }}.</p>
+</div>
+
+{% if lines %}
+<div class="layout-split">
+  <div>
+    <div class="card-panel">
+      <table class="table-lines">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Price</th>
+            <th>Qty</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in lines %}
+            <tr>
+              <td>
+                <div style="display:flex;gap:1rem;align-items:flex-start;">
+                  <a href="{% url 'product_detail' row.category row.product.id %}" style="flex-shrink:0;">
+                    <img src="{{ row.product.img.url }}" alt="" width="72" height="90" style="border-radius:8px;object-fit:cover;">
+                  </a>
+                  <div>
+                    <strong>{{ row.product.company }}</strong>
+                    <div class="muted">{{ row.product.model|truncatewords:10 }}</div>
+                    <div class="muted">Size {{ row.size }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>₹{{ row.product.price }}</td>
+              <td>
+                <form method="post" action="{% url 'update_bag_quantity' row.item_id %}" style="display:flex;align-items:center;gap:0.35rem;">
+                  {% csrf_token %}
+                  <select name="quantity" onchange="this.form.submit()" style="width:auto;padding:0.35rem;">
+                    {% for n in qty_choices %}
+                      <option value="{{ n }}" {% if row.quantity == n %}selected{% endif %}>{{ n }}</option>
+                    {% endfor %}
+                  </select>
+                </form>
+              </td>
+              <td>
+                <form method="post" action="{% url 'remove_from_bag' row.item_id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-ghost" style="padding:0.35rem 0.65rem;font-size:0.85rem;">Remove</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div>
+    <div class="card-panel">
+      <h2 class="pdp-title" style="font-size:1.15rem;margin-bottom:1rem;">Order summary</h2>
+      <table class="table-lines">
+        <tr>
+          <td>Subtotal</td>
+          <td style="text-align:right;">₹{{ subtotal }}</td>
+        </tr>
+        <tr>
+          <td>Shipping</td>
+          <td style="text-align:right;">{% if shipping == 0 %}Free{% else %}₹{{ shipping }}{% endif %}</td>
+        </tr>
+        <tr>
+          <td><strong>Estimated total</strong></td>
+          <td style="text-align:right;"><strong>₹{{ total }}</strong></td>
+        </tr>
+      </table>
+      <a href="{% url 'checkout' %}" class="btn btn-accent btn-block" style="margin-top:1.25rem;">Proceed to checkout</a>
+      <p class="muted" style="margin-top:1rem;font-size:0.85rem;">Payment is completed in a separate secure step after we confirm your order details.</p>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="card-panel" style="text-align:center;padding:3rem;">
+  <p class="muted" style="margin-bottom:1rem;">Your bag is empty.</p>
+  <a href="{% url 'wft' %}" class="btn btn-primary">Browse women’s</a>
+  <a href="{% url 'mft' %}" class="btn btn-ghost">Men’s</a>
+  <a href="{% url 'kft' %}" class="btn btn-ghost">Kids’</a>
+</div>
+{% endif %}
+{% endblock %}

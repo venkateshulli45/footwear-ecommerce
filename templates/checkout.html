@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout — Jagam Footwear{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <h1>Checkout</h1>
+  <p>Enter your shipping details. Stock is held when you place the order; online payment will be added as the final step.</p>
+</div>
+
+<div class="layout-split">
+  <div>
+    <div class="card-panel">
+      <h2 class="pdp-title" style="font-size:1.15rem;margin-bottom:1rem;">Delivery address</h2>
+      <form method="post" action="{% url 'checkout' %}">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="fullname">Full name</label>
+          <input type="text" id="fullname" name="fullname" required value="{{ user.get_full_name }}">
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone" name="phone" required placeholder="10-digit mobile">
+        </div>
+        <div class="form-group">
+          <label for="address">Street address</label>
+          <textarea id="address" name="address" rows="3" required placeholder="House / flat, street, area"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="landmark">Landmark (optional)</label>
+          <input type="text" id="landmark" name="landmark">
+        </div>
+        <div class="form-group">
+          <label for="pincode">PIN code</label>
+          <input type="text" id="pincode" name="pincode" required pattern="[0-9]{6}" maxlength="10" placeholder="6 digits">
+        </div>
+        <button type="submit" class="btn btn-accent btn-block">Place order</button>
+      </form>
+    </div>
+  </div>
+  <div>
+    <div class="card-panel">
+      <h2 class="pdp-title" style="font-size:1.15rem;margin-bottom:1rem;">Your order</h2>
+      <table class="table-lines">
+        {% for row in lines %}
+          <tr>
+            <td>
+              <strong>{{ row.product.company }}</strong>
+              <div class="muted" style="font-size:0.85rem;">Size {{ row.bag_item.size }} × {{ row.bag_item.quantity }}</div>
+            </td>
+            <td style="text-align:right;">₹{{ row.line_total }}</td>
+          </tr>
+        {% endfor %}
+        <tr>
+          <td>Subtotal</td>
+          <td style="text-align:right;">₹{{ subtotal }}</td>
+        </tr>
+        <tr>
+          <td>Shipping</td>
+          <td style="text-align:right;">{% if shipping == 0 %}Free{% else %}₹{{ shipping }}{% endif %}</td>
+        </tr>
+        <tr>
+          <td><strong>Total</strong></td>
+          <td style="text-align:right;"><strong>₹{{ total }}</strong></td>
+        </tr>
+      </table>
+      <div class="payment-banner">
+        <strong>Payment</strong>
+        Your order is confirmed without charging a card here. A payment gateway will be connected as the last step — until then, our team may contact you to confirm COD or prepayment options.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

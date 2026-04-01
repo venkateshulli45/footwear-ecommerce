@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} — Jagam Footwear{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <h1>{{ page_title }}</h1>
+  <p>{{ page_subtitle }}</p>
+</div>
+
+<div class="product-grid">
+  {% for product in products %}
+    <article class="product-card">
+      <a href="{% url 'product_detail' category_code product.id %}" class="product-card__media">
+        <img src="{{ product.img.url }}" alt="{{ product.company }} {{ product.model|truncatewords:8 }}" width="400" height="500" loading="lazy">
+      </a>
+      <div class="product-card__body">
+        <div class="product-card__brand">{{ product.company }}</div>
+        <h2 class="product-card__title">
+          <a href="{% url 'product_detail' category_code product.id %}" style="color:inherit;text-decoration:none;">{{ product.model|truncatewords:12 }}</a>
+        </h2>
+        <div class="product-card__price">₹{{ product.price }}</div>
+        {% if product.available_sizes %}
+          <p class="product-card__meta">Sizes in stock: {{ product.available_sizes|join:", " }}</p>
+        {% else %}
+          <p class="product-card__meta">Currently out of stock</p>
+        {% endif %}
+        <a href="{% url 'product_detail' category_code product.id %}" class="btn btn-primary btn-block">View product</a>
+      </div>
+    </article>
+  {% empty %}
+    <p class="muted">No products in this collection yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}
