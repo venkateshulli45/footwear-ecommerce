@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import re
 
 from dotenv import load_dotenv
 
@@ -142,14 +143,26 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Cloudinary (uploaded media). Set CLOUDINARY_* in .env — do not commit secrets.
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', ''),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', ''),
+    'CLOUD_NAME': (os.environ.get('CLOUDINARY_CLOUD_NAME') or '').strip(),
+    'API_KEY': (os.environ.get('CLOUDINARY_API_KEY') or '').strip(),
+    'API_SECRET': (os.environ.get('CLOUDINARY_API_SECRET') or '').strip(),
 }
 
-_cloudinary_ready = all(
-    CLOUDINARY_STORAGE[k]
-    for k in ('CLOUD_NAME', 'API_KEY', 'API_SECRET')
+
+def _cloudinary_cloud_name_looks_valid(name: str) -> bool:
+    """
+    Values like "Footwear" are folder/brand labels, not Cloudinary cloud_name.
+    Wrong names still pass non-empty checks and break uploads at API time.
+    Real names come from the Cloudinary dashboard (lowercase, letters, digits, hyphens).
+    """
+    if len(name) < 3:
+        return False
+    return bool(re.fullmatch(r'[a-z0-9][a-z0-9_-]*', name))
+
+
+_cloudinary_ready = (
+    all(CLOUDINARY_STORAGE[k] for k in ('CLOUD_NAME', 'API_KEY', 'API_SECRET'))
+    and _cloudinary_cloud_name_looks_valid(CLOUDINARY_STORAGE['CLOUD_NAME'])
 )
 if _cloudinary_ready:
     STORAGES = {
