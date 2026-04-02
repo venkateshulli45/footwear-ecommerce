@@ -4,3 +4,4 @@ psycopg2-binary
 cloudinary>=1.36.0
 django-cloudinary-storage
 python-dotenv>=1.0.0
+django-allauth[socialaccount]>=65.0

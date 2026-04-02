@@ -35,7 +35,15 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 LOGIN_URL = '/accounts/login'
 LOGIN_REDIRECT_URL = '/'
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 
+# django-allauth (Google OAuth). Site + auth backends required.
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
 # Application definition
 
@@ -47,6 +55,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'cloudinary',
     'cloudinary_storage',
     'accounts',
@@ -62,6 +75,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -118,8 +132,37 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_SECURE = True  # Use only if your site is served over HTTPS
+# Local dev uses HTTP; Secure cookies break sessions + OAuth callback unless HTTPS.
+SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
+
+# --- django-allauth account / social (Google) ---
+ACCOUNT_LOGIN_METHODS = {'username'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+# Skip the plain allauth "Sign in via Google" confirmation page; go straight to Google OAuth.
+SOCIALACCOUNT_LOGIN_ON_GET = True
+
+_GOOGLE_OAUTH_CLIENT_ID = (os.environ.get('GOOGLE_OAUTH_CLIENT_ID') or '').strip()
+_GOOGLE_OAUTH_CLIENT_SECRET = (os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET') or '').strip()
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+    }
+}
+if _GOOGLE_OAUTH_CLIENT_ID and _GOOGLE_OAUTH_CLIENT_SECRET:
+    SOCIALACCOUNT_PROVIDERS['google']['APP'] = {
+        'client_id': _GOOGLE_OAUTH_CLIENT_ID,
+        'secret': _GOOGLE_OAUTH_CLIENT_SECRET,
+        'key': '',
+    }
+
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https' if not DEBUG else 'http'
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Asia/Kolkata'
@@ -141,11 +184,39 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Cloudinary (uploaded media). Set CLOUDINARY_* in .env — do not commit secrets.
+
+def _parse_cloudinary_url(url: str) -> dict[str, str]:
+    """
+    Parse cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+    (same format as the Cloudinary dashboard env template).
+    """
+    url = (url or '').strip()
+    if not url.startswith('cloudinary://'):
+        return {}
+    rest = url[len('cloudinary://') :]
+    if '@' not in rest:
+        return {}
+    creds, cloud = rest.rsplit('@', 1)
+    if ':' not in creds:
+        return {}
+    key, secret = creds.split(':', 1)
+    return {
+        'CLOUD_NAME': cloud.strip(),
+        'API_KEY': key.strip(),
+        'API_SECRET': secret.strip(),
+    }
+
+
+_cloudinary_from_url = _parse_cloudinary_url(os.environ.get('CLOUDINARY_URL', ''))
+
+# Cloudinary (uploaded media). Prefer CLOUDINARY_URL in .env, or the three vars — do not commit secrets.
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': (os.environ.get('CLOUDINARY_CLOUD_NAME') or '').strip(),
-    'API_KEY': (os.environ.get('CLOUDINARY_API_KEY') or '').strip(),
-    'API_SECRET': (os.environ.get('CLOUDINARY_API_SECRET') or '').strip(),
+    'CLOUD_NAME': _cloudinary_from_url.get('CLOUD_NAME')
+    or (os.environ.get('CLOUDINARY_CLOUD_NAME') or '').strip(),
+    'API_KEY': _cloudinary_from_url.get('API_KEY')
+    or (os.environ.get('CLOUDINARY_API_KEY') or '').strip(),
+    'API_SECRET': _cloudinary_from_url.get('API_SECRET')
+    or (os.environ.get('CLOUDINARY_API_SECRET') or '').strip(),
 }
 
 
