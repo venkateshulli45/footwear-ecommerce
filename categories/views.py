@@ -105,10 +105,18 @@ def _annotate_products(products, category_code):
     return products
 
 
+def _apply_sorting(queryset, sort_param):
+    if sort_param == 'price_asc':
+        return queryset.order_by('price')
+    elif sort_param == 'price_desc':
+        return queryset.order_by('-price')
+    return queryset.order_by('-id')
+
+
 def wft(request):
-    products = _annotate_products(
-        list(WFM.objects.prefetch_related('sizes').all()), 'WFM'
-    )
+    current_sort = request.GET.get('sort', '')
+    queryset = _apply_sorting(WFM.objects.prefetch_related('sizes'), current_sort)
+    products = _annotate_products(list(queryset), 'WFM')
     meta = CATALOG_META['WFM']
     return render(
         request,
@@ -118,14 +126,15 @@ def wft(request):
             'category_code': 'WFM',
             'page_title': meta['title'],
             'page_subtitle': meta['subtitle'],
+            'current_sort': current_sort,
         },
     )
 
 
 def mft(request):
-    products = _annotate_products(
-        list(MFM.objects.prefetch_related('sizes').all()), 'MFM'
-    )
+    current_sort = request.GET.get('sort', '')
+    queryset = _apply_sorting(MFM.objects.prefetch_related('sizes'), current_sort)
+    products = _annotate_products(list(queryset), 'MFM')
     meta = CATALOG_META['MFM']
     return render(
         request,
@@ -135,14 +144,15 @@ def mft(request):
             'category_code': 'MFM',
             'page_title': meta['title'],
             'page_subtitle': meta['subtitle'],
+            'current_sort': current_sort,
         },
     )
 
 
 def kft(request):
-    products = _annotate_products(
-        list(KFM.objects.prefetch_related('sizes').all()), 'KFM'
-    )
+    current_sort = request.GET.get('sort', '')
+    queryset = _apply_sorting(KFM.objects.prefetch_related('sizes'), current_sort)
+    products = _annotate_products(list(queryset), 'KFM')
     meta = CATALOG_META['KFM']
     return render(
         request,
@@ -152,6 +162,7 @@ def kft(request):
             'category_code': 'KFM',
             'page_title': meta['title'],
             'page_subtitle': meta['subtitle'],
+            'current_sort': current_sort,
         },
     )
 

@@ -1005,11 +1005,21 @@ main {
   .site-header__inner {
     flex-wrap: wrap;
   }
+  .nav-actions {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+  }
+  .theme-menu__panel {
+    right: auto;
+    left: 0;
+  }
   .nav-main {
     order: 3;
     width: 100%;
     justify-content: center;
     padding-top: 0.5rem;
+    margin-top: 0.5rem;
     border-top: 1px solid var(--color-border);
   }
 }
