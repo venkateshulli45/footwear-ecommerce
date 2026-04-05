@@ -12,7 +12,11 @@
   {% for product in products %}
     <article class="product-card">
       <a href="{% url 'product_detail' category_code product.id %}" class="product-card__media">
-        <img src="{{ product.img.url }}" alt="{{ product.company }} {{ product.model|truncatewords:8 }}" width="400" height="500" loading="lazy">
+        {% if product.img %}
+          <img src="{{ product.img.url }}" alt="{{ product.company }} {{ product.model|truncatewords:8 }}" width="400" height="200" loading="lazy">
+        {% else %}
+          <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #eceae6; color: var(--color-muted);">No image</div>
+        {% endif %}
         {% if product.has_discount %}
           <span class="product-card__badge">{{ product.discount_percent }}% OFF</span>
         {% endif %}
@@ -45,7 +49,7 @@
         {% else %}
           <p class="product-card__meta">Currently out of stock</p>
         {% endif %}
-        <a href="{% url 'product_detail' category_code product.id %}" class="btn btn-primary btn-block">View product</a>
+        <a href="{% url 'product_detail' category_code product.id %}" class="btn btn-primary btn-block" style="margin-top: auto;">View product</a>
       </div>
     </article>
   {% empty %}
