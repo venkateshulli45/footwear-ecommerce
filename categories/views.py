@@ -62,6 +62,10 @@ def get_product_and_sizes(category, product_id):
         available_sizes = list(
             product.sizes.filter(quantity__gt=0).values_list('size', flat=True)
         )
+        try:
+            available_sizes.sort(key=float)
+        except ValueError:
+            available_sizes.sort()
         return product, available_sizes
     except ProductModel.DoesNotExist:
         return None, []
@@ -70,6 +74,10 @@ def get_product_and_sizes(category, product_id):
 def _annotate_products(products, category_code):
     for product in products:
         available_sizes = [s.size for s in product.sizes.all() if s.quantity > 0]
+        try:
+            available_sizes.sort(key=float)
+        except ValueError:
+            available_sizes.sort()
         product.set_available_sizes(available_sizes)
 
         # Pricing + merch annotations for templates (avoid template math).

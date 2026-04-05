@@ -1,16 +1,19 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+<script>
+(function(){var k='jagam-color-scheme';var v=null;try{v=localStorage.getItem(k);}catch(e){}if(v!=='light'&&v!=='dark')v='system';document.documentElement.setAttribute('data-theme',v);})();
+</script>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#1e3a2f">
+  <meta name="theme-color" id="meta-theme-color" content="#1e3a2f">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>{% block title %}Control — Jagam Footwear{% endblock %}</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="{% static 'pwa/icon.svg' %}">
   <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/font/bootstrap-icons.css' %}">
-  <link rel="stylesheet" href="{% static 'css/store.css' %}">
+  <link rel="stylesheet" href="{% static 'css/store.css' %}?v=4">
   {% block extra_head %}{% endblock %}
 </head>
 <body class="control-body">
@@ -22,6 +25,26 @@
         <a href="{% url 'control_dashboard' %}" aria-current="{% if request.path|slice:':9' == '/control/' %}page{% endif %}">Control</a>
       </nav>
       <div class="nav-actions">
+        <div class="theme-menu" id="theme-menu">
+          <button type="button" class="theme-menu__trigger" id="theme-menu-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="theme-menu-panel">
+            <i class="bi bi-sun-fill theme-menu__icon" id="theme-menu-icon" aria-hidden="true"></i>
+            <span class="visually-hidden" id="theme-menu-label">Theme appearance</span>
+          </button>
+          <div class="theme-menu__panel" id="theme-menu-panel" role="listbox" aria-label="Color theme" hidden>
+            <button type="button" class="theme-menu__option" role="option" data-theme-choice="light" aria-selected="false">
+              <span class="theme-menu__bullet" aria-hidden="true"></span>
+              <span>Light</span>
+            </button>
+            <button type="button" class="theme-menu__option" role="option" data-theme-choice="dark" aria-selected="false">
+              <span class="theme-menu__bullet" aria-hidden="true"></span>
+              <span>Dark</span>
+            </button>
+            <button type="button" class="theme-menu__option" role="option" data-theme-choice="system" aria-selected="false">
+              <span class="theme-menu__bullet" aria-hidden="true"></span>
+              <span>System</span>
+            </button>
+          </div>
+        </div>
         <span class="muted" style="font-size:0.9rem;">{{ request.user.username }}</span>
         <a href="{% url 'logout' %}" class="btn btn-ghost" style="padding:0.5rem 0.85rem;">Sign out</a>
       </div>
@@ -66,6 +89,7 @@
       {% block content %}{% endblock %}
     </main>
   </div>
+  <script src="{% static 'js/theme.js' %}?v=2"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
