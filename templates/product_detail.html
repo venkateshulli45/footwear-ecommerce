@@ -11,9 +11,26 @@
     <img src="{{ product.img.url }}" alt="{{ product.company }} {{ product.model|truncatewords:6 }}" width="600" height="750">
   </div>
   <div>
-    <p class="product-card__brand" style="margin-bottom:0.5rem;">{{ product.company }}</p>
+    <div class="product-card__row" style="margin-bottom:0.5rem;">
+      <p class="product-card__brand" style="margin:0;">{{ product.company }}</p>
+      {% if product.display_rating %}
+        <div class="rating-pill" aria-label="Rating {{ product.display_rating }} out of 5">
+          <i class="bi bi-star-fill" aria-hidden="true"></i>
+          <span>{{ product.display_rating }}</span>
+          {% if product.rating_count %}
+            <span class="rating-pill__count">({{ product.rating_count }})</span>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
     <h1 class="pdp-title">{{ product.model }}</h1>
-    <p class="product-card__price" style="font-size:1.5rem;">₹{{ product.price }}</p>
+    <div class="price-line price-line--pdp">
+      <span class="price-line__selling">₹{{ product.price }}</span>
+      {% if product.display_mrp %}
+        <span class="price-line__mrp">₹{{ product.display_mrp }}</span>
+        <span class="price-line__off">({{ product.discount_percent }}% OFF)</span>
+      {% endif %}
+    </div>
     <p class="muted">SKU {{ product.articleno }}</p>
     <hr style="border:none;border-top:1px solid var(--color-border);margin:1.5rem 0;">
 

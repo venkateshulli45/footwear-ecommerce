@@ -14,6 +14,8 @@ from pathlib import Path
 import os
 import re
 
+import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,13 +27,28 @@ load_dotenv(BASE_DIR / ".env")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-nn$rj5w-v^r*#!3!e5+on^l8r4=yurirhid1ummc%4#qb3d9mf'
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = str(
+    os.environ.get('DJANGO_DEBUG', os.environ.get('DEBUG', 'False'))
+).lower() in ('1', 'true', 'yes')
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = (os.environ.get('DJANGO_SECRET_KEY') or os.environ.get('SECRET_KEY') or '').strip()
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'django-insecure-nn$rj5w-v^r*#!3!e5+on^l8r4=yurirhid1ummc%4#qb3d9mf'
+    else:
+        raise ImproperlyConfigured('Set DJANGO_SECRET_KEY (or SECRET_KEY) when DEBUG is False.')
+
+# Comma-separated hostnames, e.g. "app.onrender.com,example.com"
+_raw_allowed = (os.environ.get('DJANGO_ALLOWED_HOSTS') or os.environ.get('ALLOWED_HOSTS') or '').strip()
+ALLOWED_HOSTS = [h.strip() for h in _raw_allowed.split(',') if h.strip()]
+if DEBUG and not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+elif not DEBUG and not ALLOWED_HOSTS:
+    raise ImproperlyConfigured(
+        'Set DJANGO_ALLOWED_HOSTS (or ALLOWED_HOSTS) to a comma-separated list of hostnames.'
+    )
 
 LOGIN_URL = '/accounts/login'
 LOGIN_REDIRECT_URL = '/'
@@ -64,11 +81,13 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'accounts',
     'categories.apps.CategoriesConfig',
+    'adminpanel.apps.AdminpanelConfig',
 ]
 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -100,19 +119,41 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'neondb',  # your DB name
-        'USER': 'neondb_owner',
-        'PASSWORD': 'npg_bHwJCK0FZk3N',
-        'HOST': 'ep-tiny-snow-amc725bi-pooler.c-5.us-east-1.aws.neon.tech',
-        'PORT': '5432',
-        'OPTIONS': {
-            'sslmode': 'require'
+def _database_from_env() -> dict:
+    """Prefer DATABASE_URL; else Postgres via PG* / POSTGRES_* (e.g. Neon, Render)."""
+    url = (os.environ.get('DATABASE_URL') or '').strip()
+    if url:
+        return {
+            'default': dj_database_url.parse(
+                url,
+                conn_max_age=600,
+                ssl_require=True,
+            )
         }
-    }
-}
+    name = (os.environ.get('PGDATABASE') or os.environ.get('POSTGRES_DB') or '').strip()
+    user = (os.environ.get('PGUSER') or os.environ.get('POSTGRES_USER') or '').strip()
+    password = (os.environ.get('PGPASSWORD') or os.environ.get('POSTGRES_PASSWORD') or '').strip()
+    host = (os.environ.get('PGHOST') or os.environ.get('POSTGRES_HOST') or '').strip()
+    port = (os.environ.get('PGPORT') or os.environ.get('POSTGRES_PORT') or '5432').strip()
+    if name and user and password and host:
+        return {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': name,
+                'USER': user,
+                'PASSWORD': password,
+                'HOST': host,
+                'PORT': port,
+                'OPTIONS': {'sslmode': 'require'},
+            }
+        }
+    raise ImproperlyConfigured(
+        'Set DATABASE_URL, or PGDATABASE, PGUSER, PGPASSWORD, PGHOST '
+        '(and optionally PGPORT).'
+    )
+
+
+DATABASES = _database_from_env()
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -135,6 +176,7 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 # Local dev uses HTTP; Secure cookies break sessions + OAuth callback unless HTTPS.
 SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SECURE = not DEBUG
 
 # --- django-allauth account / social (Google) ---
 ACCOUNT_LOGIN_METHODS = {'username'}
@@ -235,13 +277,19 @@ _cloudinary_ready = (
     all(CLOUDINARY_STORAGE[k] for k in ('CLOUD_NAME', 'API_KEY', 'API_SECRET'))
     and _cloudinary_cloud_name_looks_valid(CLOUDINARY_STORAGE['CLOUD_NAME'])
 )
+# Production (e.g. Render): WhiteNoise serves collected static files from STATIC_ROOT.
+_staticfiles_backend = (
+    'whitenoise.storage.CompressedStaticFilesStorage'
+    if not DEBUG
+    else 'django.contrib.staticfiles.storage.StaticFilesStorage'
+)
 if _cloudinary_ready:
     STORAGES = {
         'default': {
             'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
         },
         'staticfiles': {
-            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+            'BACKEND': _staticfiles_backend,
         },
     }
 else:
@@ -250,6 +298,6 @@ else:
             'BACKEND': 'django.core.files.storage.FileSystemStorage',
         },
         'staticfiles': {
-            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+            'BACKEND': _staticfiles_backend,
         },
     }

@@ -1,0 +1,34 @@
+{% extends "control/base_control.html" %}
+
+{% block title %}System health — Control{% endblock %}
+
+{% block content %}
+  <div class="page-hero" style="margin-bottom:1.5rem;">
+    <h1>System health</h1>
+    <p>Basic runtime checks.</p>
+  </div>
+
+  <div class="card-panel">
+    <table class="table-lines" aria-label="System health table">
+      <tbody>
+        <tr>
+          <th>Server time</th>
+          <td>{{ info.server_time }}</td>
+        </tr>
+        <tr>
+          <th>DB vendor</th>
+          <td>{{ info.db_vendor }}</td>
+        </tr>
+        <tr>
+          <th>DB name</th>
+          <td>{{ info.db_name }}</td>
+        </tr>
+        <tr>
+          <th>DB host</th>
+          <td>{{ info.db_host }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
+

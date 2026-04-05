@@ -25,6 +25,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('allauth.urls')),
     path('catalog/', include('categories.urls')),
+    path('control/', include('adminpanel.urls')),
 ]
 
 

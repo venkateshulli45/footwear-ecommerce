@@ -1,0 +1,42 @@
+{% extends "control/base_control.html" %}
+
+{% block title %}Control dashboard — Jagam Footwear{% endblock %}
+
+{% block content %}
+  <div class="page-hero" style="margin-bottom:1.5rem;">
+    <h1>Control dashboard</h1>
+    <p>Administrator tools for user management, audit logs, and basic system checks.</p>
+  </div>
+
+  <div class="control-cards">
+    <a class="control-card" href="{% url 'control_users' %}">
+      <div class="control-card__icon"><i class="bi bi-people" aria-hidden="true"></i></div>
+      <div>
+        <div class="control-card__title">User administration</div>
+        <div class="muted">Assign roles and manage access</div>
+      </div>
+    </a>
+    <a class="control-card" href="{% url 'control_role_codes' %}">
+      <div class="control-card__icon"><i class="bi bi-key" aria-hidden="true"></i></div>
+      <div>
+        <div class="control-card__title">Role codes</div>
+        <div class="muted">Generate codes for Footwear/Business admins</div>
+      </div>
+    </a>
+    <a class="control-card" href="{% url 'control_logs' %}">
+      <div class="control-card__icon"><i class="bi bi-journal-text" aria-hidden="true"></i></div>
+      <div>
+        <div class="control-card__title">DB logs &amp; audit</div>
+        <div class="muted">Track admin activity</div>
+      </div>
+    </a>
+    <a class="control-card" href="{% url 'control_health' %}">
+      <div class="control-card__icon"><i class="bi bi-heart-pulse" aria-hidden="true"></i></div>
+      <div>
+        <div class="control-card__title">System health</div>
+        <div class="muted">Database connectivity and runtime info</div>
+      </div>
+    </a>
+  </div>
+{% endblock %}
+

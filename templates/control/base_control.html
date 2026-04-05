@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Control — Jagam Footwear{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'node_modules/bootstrap-icons/font/bootstrap-icons.css' %}">
+  <link rel="stylesheet" href="{% static 'css/store.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="control-body">
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a href="{% url 'index' %}" class="logo">Jagam <span>Footwear</span></a>
+      <nav class="nav-main" aria-label="Primary">
+        <a href="{% url 'index' %}">Store</a>
+        <a href="{% url 'control_dashboard' %}" aria-current="{% if request.path|slice:':9' == '/control/' %}page{% endif %}">Control</a>
+      </nav>
+      <div class="nav-actions">
+        <span class="muted" style="font-size:0.9rem;">{{ request.user.username }}</span>
+        <a href="{% url 'logout' %}" class="btn btn-ghost" style="padding:0.5rem 0.85rem;">Sign out</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="control-shell">
+    <aside class="control-sidebar" aria-label="Admin sidebar">
+      <div class="control-sidebar__title">Administrator</div>
+      <nav class="control-nav">
+        <a class="control-nav__link {% if request.resolver_match.url_name == 'control_dashboard' %}is-active{% endif %}" href="{% url 'control_dashboard' %}">
+          <i class="bi bi-speedometer2" aria-hidden="true"></i>
+          <span>Dashboard</span>
+        </a>
+        <a class="control-nav__link {% if request.resolver_match.url_name == 'control_users' %}is-active{% endif %}" href="{% url 'control_users' %}">
+          <i class="bi bi-people" aria-hidden="true"></i>
+          <span>User administration</span>
+        </a>
+        <a class="control-nav__link {% if request.resolver_match.url_name == 'control_role_codes' %}is-active{% endif %}" href="{% url 'control_role_codes' %}">
+          <i class="bi bi-key" aria-hidden="true"></i>
+          <span>Role codes</span>
+        </a>
+        <a class="control-nav__link {% if request.resolver_match.url_name == 'control_logs' %}is-active{% endif %}" href="{% url 'control_logs' %}">
+          <i class="bi bi-journal-text" aria-hidden="true"></i>
+          <span>DB logs &amp; audit</span>
+        </a>
+        <a class="control-nav__link {% if request.resolver_match.url_name == 'control_health' %}is-active{% endif %}" href="{% url 'control_health' %}">
+          <i class="bi bi-heart-pulse" aria-hidden="true"></i>
+          <span>System health</span>
+        </a>
+      </nav>
+    </aside>
+
+    <main class="control-main">
+      {% if messages %}
+        <ul class="messages">
+          {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
+

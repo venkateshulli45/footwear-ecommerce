@@ -127,6 +127,9 @@ class KFMSizeAvailability(SizeAvailability):
 
 class BaseProduct(models.Model):
     price = models.IntegerField()
+    mrp = models.IntegerField(null=True, blank=True)
+    rating = models.DecimalField(max_digits=2, decimal_places=1, null=True, blank=True)
+    rating_count = models.PositiveIntegerField(default=0)
     model = models.TextField()
     company = models.CharField(max_length=100)
     img = models.ImageField(upload_to='pics')

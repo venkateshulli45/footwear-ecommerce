@@ -1,0 +1,19 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control — Jagam Footwear</title>
+  {% for href in vite_css %}
+    <link rel="stylesheet" href="{% static href %}">
+  {% endfor %}
+</head>
+<body>
+  <div id="root"></div>
+  {% for src in vite_js %}
+    <script type="module" src="{% static src %}"></script>
+  {% endfor %}
+</body>
+</html>
+

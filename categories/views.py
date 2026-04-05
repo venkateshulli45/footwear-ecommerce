@@ -71,6 +71,29 @@ def _annotate_products(products, category_code):
     for product in products:
         available_sizes = [s.size for s in product.sizes.all() if s.quantity > 0]
         product.set_available_sizes(available_sizes)
+
+        # Pricing + merch annotations for templates (avoid template math).
+        try:
+            mrp = int(product.mrp) if product.mrp else None
+        except (TypeError, ValueError):
+            mrp = None
+        price = int(product.price) if product.price is not None else 0
+
+        if mrp and mrp > price and price > 0:
+            product.has_discount = True
+            product.discount_amount = mrp - price
+            product.discount_percent = int(round((product.discount_amount / mrp) * 100))
+            product.display_mrp = mrp
+        else:
+            product.has_discount = False
+            product.discount_amount = 0
+            product.discount_percent = 0
+            product.display_mrp = None
+
+        if product.rating is not None:
+            product.display_rating = float(product.rating)
+        else:
+            product.display_rating = None
     return products
 
 
@@ -131,6 +154,8 @@ def product_detail(request, category, product_id):
     product, available_sizes = get_product_and_sizes(category, product_id)
     if not product:
         return HttpResponse('Product not found.', status=404)
+    # Ensure the same derived fields as listing pages.
+    _annotate_products([product], category)
     meta = CATALOG_META.get(category, {})
     return render(
         request,

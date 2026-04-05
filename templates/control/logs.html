@@ -1,0 +1,59 @@
+{% extends "control/base_control.html" %}
+
+{% block title %}DB logs & audit — Control{% endblock %}
+
+{% block content %}
+  <div class="page-hero" style="margin-bottom:1.5rem;">
+    <h1>DB logs &amp; audit</h1>
+    <p>Review audit events and operational activity.</p>
+  </div>
+
+  <div class="card-panel" style="margin-bottom:1.25rem;">
+    <form method="get" style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:end;">
+      <div class="form-group" style="margin:0;min-width:240px;">
+        <label for="q">Search</label>
+        <input id="q" name="q" value="{{ q }}" placeholder="username, action, object...">
+      </div>
+      <div class="form-group" style="margin:0;min-width:240px;">
+        <label for="action">Action</label>
+        <select id="action" name="action">
+          <option value="">All</option>
+          {% for a in actions %}
+            <option value="{{ a }}" {% if a == action_filter %}selected{% endif %}>{{ a }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-ghost">Filter</button>
+    </form>
+  </div>
+
+  <div class="card-panel" style="overflow:auto;">
+    <table class="table-lines" aria-label="Audit log table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Actor</th>
+          <th>Action</th>
+          <th>Object</th>
+          <th>IP</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in logs %}
+          <tr>
+            <td>{{ e.created_at }}</td>
+            <td>{{ e.actor.username|default:"—" }}</td>
+            <td style="font-weight:800;">{{ e.action }}</td>
+            <td class="muted">{{ e.object_type }} {{ e.object_id }}</td>
+            <td class="muted">{{ e.ip|default:"—" }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" class="muted">No audit events yet.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
+
