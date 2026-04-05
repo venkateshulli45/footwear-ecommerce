@@ -19,7 +19,11 @@ from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from config import pwa_views
+
 urlpatterns = [
+    path('sw.js', pwa_views.service_worker, name='pwa_service_worker'),
+    path('manifest.webmanifest', pwa_views.webmanifest, name='pwa_manifest'),
     path('', include('store.urls')),
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),

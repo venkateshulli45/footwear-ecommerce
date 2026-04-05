@@ -1,0 +1,24 @@
+{
+  "name": "Jagam Footwear",
+  "short_name": "Jagam",
+  "description": "Quality footwear — women's, men's, and kids' styles.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f4f1",
+  "theme_color": "#1e3a2f",
+  "icons": [
+    {
+      "src": "/static/pwa/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/pwa/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

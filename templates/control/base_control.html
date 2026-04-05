@@ -4,7 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1e3a2f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <title>{% block title %}Control — Jagam Footwear{% endblock %}</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="{% static 'pwa/icon.svg' %}">
   <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/font/bootstrap-icons.css' %}">
   <link rel="stylesheet" href="{% static 'css/store.css' %}">
   {% block extra_head %}{% endblock %}
@@ -62,6 +66,13 @@
       {% block content %}{% endblock %}
     </main>
   </div>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+      });
+    }
+  </script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>
