@@ -213,7 +213,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = 'static/'
+# Leading slash so {% static %} URLs are root-absolute (works on every path; required for WhiteNoise).
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR / "static")  
 ]
