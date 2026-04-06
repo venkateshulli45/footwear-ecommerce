@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Notifications — Jagam Footwear{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:1rem;">
+    <div>
+      <h1 style="margin-bottom:0.35rem;">Notifications</h1>
+      <p class="muted" style="margin:0;">Order updates, offers, and account messages.</p>
+    </div>
+    {% if notifications_unread_total %}
+      <form method="post" action="{% url 'notifications_mark_all_read' %}" style="margin:0;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-ghost">Mark all read</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+{% if vapid_public_key %}
+<div class="card-panel" style="margin-bottom:1.5rem;display:flex;flex-wrap:wrap;align-items:center;gap:1rem;justify-content:space-between;">
+  <div>
+    <strong style="display:block;margin-bottom:0.25rem;">Browser alerts</strong>
+    <span class="muted" style="font-size:0.9rem;">Optional — same updates as in-app notifications, via Web Push (PWA).</span>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem;">
+    <button type="button" class="btn btn-primary" id="push-enable-btn">Enable alerts</button>
+    <button type="button" class="btn btn-ghost" id="push-disable-btn">Turn off</button>
+    <span class="muted" id="push-enable-status" style="font-size:0.9rem;" aria-live="polite"></span>
+  </div>
+</div>
+{% endif %}
+
+{% if page_obj.object_list %}
+  <div class="notif-list">
+    {% for n in page_obj %}
+      <a
+        class="notif-row {% if not n.read_at %}is-unread{% endif %}"
+        href="{% if n.link %}{{ n.link }}{% else %}{% url 'notifications_list' %}{% endif %}"
+        {% if not n.read_at %}data-mark-read-url="{% url 'notification_mark_read' n.id %}"{% endif %}
+      >
+        <div class="notif-row__title">{{ n.title }}</div>
+        {% if n.body %}
+          <div class="notif-row__body">{{ n.body }}</div>
+        {% endif %}
+        <div class="notif-row__meta">
+          {{ n.get_kind_display }} · {{ n.created_at|timesince }} ago
+          {% if n.read_at %}· Read{% endif %}
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+
+  {% if page_obj.has_other_pages %}
+    <nav class="muted" style="margin-top:1.5rem;display:flex;gap:1rem;flex-wrap:wrap;" aria-label="Pagination">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">← Newer</a>
+      {% endif %}
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Older →</a>
+      {% endif %}
+    </nav>
+  {% endif %}
+{% else %}
+  <div class="card-panel" style="text-align:center;padding:2.5rem;">
+    <p class="muted">You have no notifications yet. We’ll notify you about orders and important updates here.</p>
+    <a href="{% url 'index' %}" class="btn btn-primary" style="margin-top:1rem;">Continue shopping</a>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/notifications.js' %}?v=1"></script>
+{% if vapid_public_key %}
+<script>
+(function () {
+  var st = document.getElementById('push-enable-status');
+  var en = document.getElementById('push-enable-btn');
+  var dis = document.getElementById('push-disable-btn');
+  function setMsg(t) { if (st) st.textContent = t || ''; }
+  if (en) {
+    en.addEventListener('click', function () {
+      setMsg('…');
+      if (!window.enablePushNotifications) { setMsg('Not available.'); return; }
+      window.enablePushNotifications().then(function (r) {
+        if (r.ok) setMsg('Enabled.');
+        else if (r.error === 'denied') setMsg('Permission blocked in browser.');
+        else setMsg('Could not enable.');
+      }).catch(function () { setMsg('Could not enable.'); });
+    });
+  }
+  if (dis) {
+    dis.addEventListener('click', function () {
+      setMsg('…');
+      if (!window.disablePushNotifications) { setMsg(''); return; }
+      window.disablePushNotifications().then(function (r) {
+        setMsg(r.ok ? 'Browser alerts removed.' : '');
+      }).catch(function () { setMsg(''); });
+    });
+  }
+})();
+</script>
+{% endif %}
+{% endblock %}

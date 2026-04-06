@@ -15,7 +15,7 @@
   <link rel="icon" type="image/svg+xml" href="{% static 'pwa/icon.svg' %}">
   <link rel="apple-touch-icon" href="{% static 'pwa/icon.svg' %}">
   <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/font/bootstrap-icons.css' %}">
-  <link rel="stylesheet" href="{% static 'css/store.css' %}?v=5">
+  <link rel="stylesheet" href="{% static 'css/store.css' %}?v=6">
   {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -53,6 +53,36 @@
           </div>
         </div>
         {% if user.is_authenticated %}
+          <div class="notif-menu" id="notif-menu">
+            <button
+              type="button"
+              class="icon-link notif-menu__trigger"
+              id="notif-menu-trigger"
+              aria-expanded="false"
+              aria-controls="notif-menu-panel"
+              aria-label="Notifications{% if notification_unread_count %}, {{ notification_unread_count }} unread{% endif %}"
+            >
+              <i class="bi bi-bell" aria-hidden="true"></i>
+              <span class="badge-count" data-notification-badge {% if not notification_unread_count %}hidden{% endif %}>{% if notification_unread_count %}{{ notification_unread_count }}{% endif %}</span>
+            </button>
+            <div class="notif-menu__panel" id="notif-menu-panel" role="region" aria-label="Recent notifications" hidden>
+              {% if notification_preview %}
+                {% for n in notification_preview %}
+                  <a
+                    href="{% if n.link %}{{ n.link }}{% else %}{% url 'notifications_list' %}{% endif %}"
+                    class="notif-menu__item {% if not n.read_at %}is-unread{% endif %}"
+                    {% if not n.read_at %}data-mark-read-url="{% url 'notification_mark_read' n.id %}"{% endif %}
+                  >
+                    <span class="notif-menu__item-title">{{ n.title }}</span>
+                    <span class="notif-menu__item-meta">{{ n.created_at|timesince }} ago · {{ n.get_kind_display }}</span>
+                  </a>
+                {% endfor %}
+              {% else %}
+                <p class="notif-menu__empty">No notifications yet.</p>
+              {% endif %}
+              <a class="notif-menu__footer" href="{% url 'notifications_list' %}">View all notifications</a>
+            </div>
+          </div>
           <span class="muted" style="font-size:0.9rem;">Hi, {{ user.first_name|default:user.username }}</span>
           <a href="{% url 'view_bag' %}" class="icon-link" aria-label="Shopping bag">
             <i class="bi bi-bag" aria-hidden="true"></i>
@@ -103,6 +133,19 @@
     </div>
   </footer>
   <script src="{% static 'js/theme.js' %}?v=3"></script>
+  {% if user.is_authenticated %}
+  <script src="{% static 'js/notifications.js' %}?v=1"></script>
+  {% endif %}
+  {% if user.is_authenticated and vapid_public_key %}
+  <script>
+    window.__PUSH__ = {
+      vapidPublicKey: "{{ vapid_public_key|escapejs }}",
+      subscribeUrl: "{% url 'push_subscribe' %}",
+      unsubscribeUrl: "{% url 'push_unsubscribe' %}"
+    };
+  </script>
+  <script src="{% static 'js/push-subscribe.js' %}?v=1"></script>
+  {% endif %}
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {

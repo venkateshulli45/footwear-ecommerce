@@ -177,3 +177,58 @@ class KFM(BaseProduct):
 
     def __str__(self):
         return f"{self.company} - {self.articleno}"
+
+
+class Notification(models.Model):
+    """In-app notification for a signed-in customer (orders, promos, account)."""
+
+    class Kind(models.TextChoices):
+        ORDER = 'order', 'Order'
+        PROMOTION = 'promotion', 'Promotion'
+        ACCOUNT = 'account', 'Account'
+        SYSTEM = 'system', 'System'
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='store_notifications')
+    kind = models.CharField(max_length=20, choices=Kind.choices, default=Kind.SYSTEM)
+    title = models.CharField(max_length=255)
+    body = models.TextField(blank=True)
+    link = models.CharField(max_length=500, blank=True)
+    related_order = models.ForeignKey(
+        'Order',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='notifications',
+    )
+    read_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['user', 'read_at']),
+        ]
+
+    def __str__(self):
+        return f'{self.user_id} · {self.title[:40]}'
+
+
+class PushSubscription(models.Model):
+    """Browser Web Push subscription for a user (PWA); delivery mirrors Notification rows."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='push_subscriptions')
+    endpoint = models.TextField()
+    p256dh = models.CharField(max_length=255)
+    auth = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'endpoint'], name='uniq_pushsubscription_user_endpoint'),
+        ]
+        indexes = [models.Index(fields=['user'])]
+
+    def __str__(self):
+        return f'{self.user_id} · {self.endpoint[:48]}…'

@@ -8,3 +8,5 @@ python-dotenv>=1.0.0
 django-allauth[socialaccount]>=65.0
 gunicorn>=23.0.0
 whitenoise>=6.8.0
+pywebpush>=2.0.0
+twilio>=9.0.0

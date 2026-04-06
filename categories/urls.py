@@ -15,4 +15,17 @@ urlpatterns = [
     path('order_confirmation/', views.order_confirmation, name='order_confirmation'),
     path('order_history/', views.order_history, name='order_history'),
     path('cancel_order/<int:order_id>/', views.cancel_order, name='cancel_order'),
+    path('notifications/', views.notifications_list, name='notifications_list'),
+    path(
+        'notifications/<int:pk>/read/',
+        views.notification_mark_read,
+        name='notification_mark_read',
+    ),
+    path(
+        'notifications/read-all/',
+        views.notifications_mark_all_read,
+        name='notifications_mark_all_read',
+    ),
+    path('push/subscribe/', views.push_subscription_save, name='push_subscribe'),
+    path('push/unsubscribe/', views.push_subscription_remove, name='push_unsubscribe'),
 ]

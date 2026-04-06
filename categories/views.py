@@ -1,19 +1,24 @@
+import json
 from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_POST
 
 from .models import (
     BagItem,
     KFM,
     MFM,
+    Notification,
     Order,
     OrderLine,
+    PushSubscription,
     WFM,
     KFMSizeAvailability,
     MFMSizeAvailability,
@@ -456,3 +461,78 @@ def cancel_order(request, order_id):
     except Exception:
         messages.error(request, 'Could not cancel this order. Contact support.')
     return redirect('order_history')
+
+
+@login_required
+@require_http_methods(['GET'])
+def notifications_list(request):
+    qs = Notification.objects.filter(user=request.user)
+    paginator = Paginator(qs, 25)
+    page = paginator.get_page(request.GET.get('page'))
+    unread = qs.filter(read_at__isnull=True).count()
+    return render(
+        request,
+        'notifications_list.html',
+        {'page_obj': page, 'notifications_unread_total': unread},
+    )
+
+
+@login_required
+@require_POST
+def notification_mark_read(request, pk):
+    n = get_object_or_404(Notification, pk=pk, user=request.user)
+    if n.read_at is None:
+        n.read_at = timezone.now()
+        n.save(update_fields=['read_at'])
+    unread = Notification.objects.filter(user=request.user, read_at__isnull=True).count()
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'ok': True, 'unread': unread})
+    nxt = request.POST.get('next')
+    if nxt and nxt.startswith('/'):
+        return redirect(nxt)
+    return redirect('notifications_list')
+
+
+@login_required
+@require_POST
+def notifications_mark_all_read(request):
+    Notification.objects.filter(user=request.user, read_at__isnull=True).update(
+        read_at=timezone.now()
+    )
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'ok': True, 'unread': 0})
+    return redirect('notifications_list')
+
+
+@login_required
+@require_POST
+def push_subscription_save(request):
+    try:
+        data = json.loads(request.body.decode() or '{}')
+    except json.JSONDecodeError:
+        return JsonResponse({'ok': False, 'error': 'invalid json'}, status=400)
+    endpoint = (data.get('endpoint') or '').strip()
+    keys = data.get('keys') or {}
+    p256dh = (keys.get('p256dh') or '').strip()
+    auth = (keys.get('auth') or '').strip()
+    if not endpoint or not p256dh or not auth:
+        return JsonResponse({'ok': False, 'error': 'missing subscription fields'}, status=400)
+    PushSubscription.objects.update_or_create(
+        user=request.user,
+        endpoint=endpoint,
+        defaults={'p256dh': p256dh, 'auth': auth},
+    )
+    return JsonResponse({'ok': True})
+
+
+@login_required
+@require_POST
+def push_subscription_remove(request):
+    try:
+        data = json.loads(request.body.decode() or '{}')
+    except json.JSONDecodeError:
+        return JsonResponse({'ok': False, 'error': 'invalid json'}, status=400)
+    endpoint = (data.get('endpoint') or '').strip()
+    if endpoint:
+        PushSubscription.objects.filter(user=request.user, endpoint=endpoint).delete()
+    return JsonResponse({'ok': True})

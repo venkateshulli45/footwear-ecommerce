@@ -1,0 +1,8 @@
+{{ notification.title }}
+
+{% if notification.body %}{{ notification.body }}
+
+{% endif %}
+{% if absolute_link %}Open: {{ absolute_link }}
+{% endif %}
+— {{ site_name }}

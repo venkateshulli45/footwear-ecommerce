@@ -6,9 +6,11 @@ from .models import (
     KFMSizeAvailability,
     MFM,
     MFMSizeAvailability,
+    Notification,
     Order,
     OrderLine,
     Purchase,
+    PushSubscription,
     WFM,
     WFMSizeAvailability,
 )
@@ -80,6 +82,28 @@ class KFMAdmin(admin.ModelAdmin):
 @admin.register(BagItem)
 class BagItemAdmin(admin.ModelAdmin):
     list_display = ('user', 'category', 'product_id', 'size', 'quantity')
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'title', 'kind', 'read_at', 'created_at')
+    list_filter = ('kind', 'read_at')
+    search_fields = ('title', 'body', 'user__username')
+    raw_id_fields = ('user', 'related_order')
+    readonly_fields = ('created_at',)
+
+
+@admin.register(PushSubscription)
+class PushSubscriptionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'endpoint_preview', 'updated_at')
+    list_filter = ('created_at',)
+    search_fields = ('user__username', 'endpoint')
+    raw_id_fields = ('user',)
+    readonly_fields = ('created_at', 'updated_at')
+
+    @admin.display(description='Endpoint')
+    def endpoint_preview(self, obj):
+        return (obj.endpoint or '')[:64] + ('…' if len(obj.endpoint or '') > 64 else '')
 
 
 admin.site.register(Purchase)

@@ -111,6 +111,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'categories.context_processors.bag_summary',
+                'categories.context_processors.notification_preview',
+                'categories.context_processors.push_bootstrap',
             ],
         },
     },
@@ -302,3 +304,45 @@ else:
             'BACKEND': _staticfiles_backend,
         },
     }
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    raw = (os.environ.get(name) or '').strip().lower()
+    if not raw:
+        return default
+    return raw in ('1', 'true', 'yes', 'on')
+
+
+# Public site URL for absolute links in emails and push payloads (no trailing slash).
+SITE_PUBLIC_URL = (os.environ.get('SITE_PUBLIC_URL') or '').strip().rstrip('/')
+
+# --- Outbound notifications (email / SMS / web push) ---
+# Each created Notification row can trigger these channels; see categories/messaging.py.
+NOTIFICATION_EMAIL = _env_bool('NOTIFICATION_EMAIL', True)
+NOTIFICATION_SMS = _env_bool('NOTIFICATION_SMS', False)
+NOTIFICATION_WEB_PUSH = _env_bool('NOTIFICATION_WEB_PUSH', True)
+
+_default_email_backend = (
+    'django.core.mail.backends.console.EmailBackend'
+    if DEBUG
+    else 'django.core.mail.backends.smtp.EmailBackend'
+)
+EMAIL_BACKEND = (os.environ.get('EMAIL_BACKEND') or _default_email_backend).strip()
+EMAIL_HOST = (os.environ.get('EMAIL_HOST') or '').strip()
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587') or '587')
+EMAIL_USE_TLS = _env_bool('EMAIL_USE_TLS', True)
+EMAIL_HOST_USER = (os.environ.get('EMAIL_HOST_USER') or '').strip()
+EMAIL_HOST_PASSWORD = (os.environ.get('EMAIL_HOST_PASSWORD') or '').strip()
+DEFAULT_FROM_EMAIL = (os.environ.get('DEFAULT_FROM_EMAIL') or 'noreply@localhost').strip()
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+TWILIO_ACCOUNT_SID = (os.environ.get('TWILIO_ACCOUNT_SID') or '').strip()
+TWILIO_AUTH_TOKEN = (os.environ.get('TWILIO_AUTH_TOKEN') or '').strip()
+TWILIO_FROM_NUMBER = (os.environ.get('TWILIO_FROM_NUMBER') or '').strip()
+
+VAPID_PUBLIC_KEY = (os.environ.get('VAPID_PUBLIC_KEY') or '').strip()
+_vapid_pk_raw = (os.environ.get('VAPID_PRIVATE_KEY') or '').strip()
+VAPID_PRIVATE_KEY = _vapid_pk_raw.replace('\\n', '\n') if _vapid_pk_raw else ''
+VAPID_ADMIN_EMAIL = (os.environ.get('VAPID_ADMIN_EMAIL') or 'mailto:admin@localhost').strip()
+if not VAPID_ADMIN_EMAIL.startswith(('mailto:', 'https://', 'http://')):
+    VAPID_ADMIN_EMAIL = f'mailto:{VAPID_ADMIN_EMAIL}'
